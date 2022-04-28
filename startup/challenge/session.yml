@@ -1,6 +1,6 @@
 name: icuas_ch
 root: ./
-startup_window: roscore
+startup_window: solution
 pre_window: |
   export UAV_NAMESPACE=red;
   export ARENA_TYPE=<%= @settings["arena"]%>;
@@ -50,7 +50,7 @@ windows:
         - waitForRos; roslaunch ardupilot_gazebo kopterworx.launch 
           use_sim_time:=true
           enable_magnet:=true
-          x:=-10
+          x:=2
           world:=$(rospack find icuas22_competition)/worlds/well_lit.world
         - waitForRos; waitForSimulation; roslaunch larics_gazebo_worlds spawn_arena_v$ARENA_TYPE.launch
         - waitForRos; waitForSimulation; sleep 2; roslaunch larics_gazebo_worlds spawn_alvar_tile.launch 
@@ -79,4 +79,12 @@ windows:
   - solution:
       layout: tiled
       panes:
-        - # Launch your Challenge solution here
+        - waitForRos; rosrun icuas22_competition sensor_pose.py 
+        - waitForRos; rosrun icuas22_competition pos_cmd_to_MultiDOFJoint.py 
+        - waitForRos; roslaunch ar_track_alvar pr2_indiv.launch
+        - waitForRos; rosrun icuas22_competition checkZone.py 
+        - waitForRos; rosrun icuas22_competition isDetected.py 
+        - waitForRos; rosrun icuas22_competition fsm.py 
+        - waitForRos; rosrun icuas22_competition precision_delivery.py 
+        #waitForRos; roslaunch exploration_manager icuas.launch
+        # Launch your Challenge solution here

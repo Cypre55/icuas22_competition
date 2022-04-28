@@ -24,8 +24,8 @@ control:
     kp: 0.25
     ki: 0.01
     kd: 0.0
-    lim_low: -0.4
-    lim_high: 0.4  
+    lim_low: -1
+    lim_high: 1  
 
   pos_y:
     kp: 1.05
@@ -38,8 +38,8 @@ control:
     kp: 0.25
     ki: 0.01
     kd: 0.0
-    lim_low: -0.4
-    lim_high: 0.4 
+    lim_low: -1
+    lim_high: 1 
 
   pos_z:
     kp: 1
