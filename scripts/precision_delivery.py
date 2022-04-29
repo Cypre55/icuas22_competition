@@ -28,11 +28,10 @@ status_ = ""
 
 
 def arDetected(msg):
-    global detected
-    detected = msg.data
+    pass
 
 def tagCallback(msg):
-    global tile_x, tile_y, tile_z, tile_yaw, yaw_flag
+    global tile_x, tile_y, tile_z, tile_yaw, yaw_flag, detected
     tile_x = msg.x
     tile_y = msg.y
     tile_z = msg.z
@@ -51,6 +50,8 @@ def tagCallback(msg):
         print("tile_y = ", tile_y)
         print("tile_z = ", tile_z)
         print("tile_yaw = ", tile_yaw)
+
+    detected = True
 
 def odometryCallback(msg):
     global signalToDrop, crr_pos, tile_z, minDist, ballistic, z, yaw_
@@ -183,7 +184,7 @@ def main():
     trajPub1 = rospy.Publisher("/red/tracker/input_trajectory", MultiDOFJointTrajectory, queue_size=1)
     magnetPub = rospy.Publisher("/red/uav_magnet/gain", Float32, queue_size=1)
     
-    rate = rospy.Rate(100) #Hz
+    rate = rospy.Rate(50) #Hz
     
     rospy.sleep(1)
 
