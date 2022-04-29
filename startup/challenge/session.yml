@@ -50,7 +50,7 @@ windows:
         - waitForRos; roslaunch ardupilot_gazebo kopterworx.launch 
           use_sim_time:=true
           enable_magnet:=true
-          x:=-10
+          x:=2
           world:=$(rospack find icuas22_competition)/worlds/well_lit.world
         - waitForRos; waitForSimulation; roslaunch larics_gazebo_worlds spawn_arena_v$ARENA_TYPE.launch
         - waitForRos; waitForSimulation; sleep 2; roslaunch larics_gazebo_worlds spawn_alvar_tile.launch 
