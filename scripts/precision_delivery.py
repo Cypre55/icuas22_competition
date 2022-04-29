@@ -4,7 +4,7 @@ from matplotlib import transforms
 import rospy
 from math import cos, sin, sqrt, pi
 from nav_msgs.msg import Odometry
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty, SetBool
 from std_msgs.msg import Float32, Duration, Bool, String
 from geometry_msgs.msg import PoseStamped, Point, Vector3, Twist, Quaternion, Transform
 from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint, MultiDOFJointTrajectory
@@ -15,7 +15,6 @@ ball_to_uav_offset = 0.4 #
 minDist = 100
 ballistic = False
 z = -1000
-
 crr_pos = Vector3()
 tile_yaw = 0
 tile_x = 0
@@ -91,8 +90,8 @@ def ballOdom(msg):
 
     Dist = sqrt( ( xb - (tile_x) )**2 + ( yb  - (tile_y))**2 + (tile_z - zb)**2 ) - 0.1
 
-    # if Dist < minDist:
-    #     minDist = Dist
+    if Dist < minDist:
+        minDist = Dist
     #     #print("minDist = ", minDist)
     # if Dist > minDist:
     #     with open("test_results.txt","a")as f:
@@ -168,9 +167,16 @@ def clostTo(X, Y):
     else:
         return False
 
+def landNow():
+    
+    land = rospy.ServiceProxy('/red/land',SetBool)
+    rospy.sleep(1)
+    land.call(True)
+
+
 def main():
     
-    global signalToDrop, ballistic, crr_pos
+    global signalToDrop, ballistic, crr_pos, inAir
 
     rospy.init_node("precisionDelivery_node")
 
@@ -183,7 +189,7 @@ def main():
     trajPub = rospy.Publisher("/red/position_hold/trajectory", MultiDOFJointTrajectoryPoint, queue_size=1)
     trajPub1 = rospy.Publisher("/red/tracker/input_trajectory", MultiDOFJointTrajectory, queue_size=1)
     magnetPub = rospy.Publisher("/red/uav_magnet/gain", Float32, queue_size=1)
-    
+    distPub = rospy.Publisher("/red/ball_min_distance", Float32, queue_size=1)
     rate = rospy.Rate(50) #Hz
     
     rospy.sleep(1)
@@ -215,9 +221,18 @@ def main():
         trajPub1.publish(traj1)
         ballistic = True
         
+        inAir = True
+        landed=False
         while not rospy.is_shutdown():
+            distPub.publish(minDist)
             if signalToDrop == 1:
                 magnetPub.publish(0.0)
+                if inAir == True:
+                    rospy.loginfo("Landing Initiated.")
+                    inAir = False
+                    if not landed:
+                        landNow()
+                        landed = True
             rate.sleep()        
 
 if __name__ == '__main__':
