@@ -79,6 +79,7 @@ windows:
   - solution:
       layout: tiled
       panes:
+        # Launch your Challenge solution here
         - waitForRos; rosrun icuas22_competition sensor_pose.py 
         - waitForRos; rosrun icuas22_competition pos_cmd_to_MultiDOFJoint.py 
         - waitForRos; roslaunch ar_track_alvar pr2_indiv.launch
@@ -86,5 +87,4 @@ windows:
         - waitForRos; rosrun icuas22_competition isDetected.py 
         - waitForRos; rosrun icuas22_competition fsm.py 
         - waitForRos; rosrun icuas22_competition precision_delivery.py 
-        #waitForRos; roslaunch exploration_manager icuas.launch
-        # Launch your Challenge solution here
+        # - waitForRos; /home/ishabhray/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z

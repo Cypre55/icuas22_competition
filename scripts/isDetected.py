@@ -68,7 +68,8 @@ def stopper():
             print(marker_pose.markers[0].pose.pose.position.x,marker_pose.markers[0].pose.pose.position.y,marker_pose.markers[0].pose.pose.position.z)
             count = count+1
             print(count)
-            if(count>100):
+            os.system("rosnode kill /zone3exp")
+            if(count>10):
                 print(count)
                 print("KILLLLLLLLLLL")
                 pubMsg3.x = marker_pose.markers[0].pose.pose.position.x
@@ -83,7 +84,6 @@ def stopper():
                 # pubMsg2.pose.orientation.w = w
                 # pub2.publish(pubMsg2)
                 pub3.publish(pubMsg3)
-                os.system("rosnode kill /zone3exp")
                 os.system("rosnode kill /isDetected")
 
     # pub1.publish(pubMsg)
