@@ -42,7 +42,7 @@ def calculations():
         pubMsg = PoseStamped()
 
         # while(check_error(1.5,drone_pose.pose.pose.position.x) == False):
-        pubMsg.pose.position.x = 1.5
+        pubMsg.pose.position.x = 2
         pubMsg.pose.position.y = -4
         pubMsg.pose.position.z = 3
 
@@ -105,7 +105,7 @@ def calculations():
 
         rospy.sleep(5)
         # while(check_error(1.5,drone_pose.pose.pose.position.x) == False):
-        pubMsg.pose.position.x = 1.5
+        pubMsg.pose.position.x = 2
         pubMsg.pose.position.y = 4
         
         pubMsg.pose.position.z = 3

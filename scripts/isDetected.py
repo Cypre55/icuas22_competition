@@ -5,11 +5,13 @@ import os
 from ar_track_alvar_msgs.msg import AlvarMarkers,AlvarMarker
 from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped,Point
+from geometry_msgs.msg import PoseStamped,Point,Vector3, Twist, Quaternion, Transform
+from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint, MultiDOFJointTrajectory
 
 pub1 = rospy.Publisher('/isDetected',Bool,queue_size=10)
 pub2 = rospy.Publisher('red/tracker/input_pose', PoseStamped, queue_size=10)
 pub3 = rospy.Publisher('/red/tag_position_reconstructed',Point,queue_size=10)
+# trajPub = rospy.Publisher("/red/position_hold/trajectory", MultiDOFJointTrajectoryPoint, queue_size=1)
 killer = False
 def markerCallback(data):
     global marker_pose
@@ -40,13 +42,19 @@ def stopper():
             y = drone_pose.pose.pose.orientation.y
             z = drone_pose.pose.pose.orientation.z
             w = drone_pose.pose.pose.orientation.w
-            if drone_pose.pose.pose.orientation.z<-0.04:
+            if drone_pose.pose.pose.orientation.z<-0.1:
                 b = b+2
-            elif drone_pose.pose.pose.orientation.z>0.04:
+            elif drone_pose.pose.pose.orientation.z>0.1:
                 b = b-2
             else:
                 a = a-2
-
+            # P1 = Vector3(a,b,c)
+            # Q1 = Quaternion(x,y,z,w)
+            # T1 = Transform(translation=P1, rotation=Q1)
+            # V1 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
+            # A1 = Twist(linear=Vector3( 0,0, 0), angular=Vector3( 0, 0, 0))
+            # trajP1 = MultiDOFJointTrajectoryPoint(transforms=[T1], velocities=[V1], accelerations=[A1])
+            # trajPub.publish(trajP1)
             flag = True
             pubMsg.data = True
             pubMsg2.pose.position.x = a
