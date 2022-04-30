@@ -40,9 +40,9 @@ def tagCallback(data):
 
 def calc(time, hit, tag):
     score = 0
-    score += 25*exp(-2*tag)
-    score += 35*exp(-0.5*hit)
-    score += 40*exp(-time/100)
+    score += round(25*exp(-2*tag)) * 2 / 2
+    score += round(35*exp(-0.5*hit)) * 2 / 2
+    score += round(40*exp(-time/100)) * 2 / 2
     return score
 
 def eval():

@@ -4,13 +4,15 @@ import rospy
 import os
 import numpy as np
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped, Pose
+from geometry_msgs.msg import PoseStamped, Pose, Twist, Transform, Vector3
 from std_msgs.msg import Int32,Bool
 import rosnode
 import tf.transformations
+from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint
+
 
 POSE_SAMPLING_INTERVAL = 5
-FUEL_TRIG_DUR_TIME = 2
+FUEL_TRIG_DUR_TIME = 1
 FUEL_INIT_WAIT_TIME = 5
 ZONE_BOUNDS = [[-12.5, -8], [-8, 1], [1, 12.5]]
 FSM_RATE = 10.0
@@ -52,6 +54,7 @@ class FSM():
         self.trigger_pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
         self.zone_pub = rospy.Publisher('/zone', Int32, queue_size=1)
         self.pose_pub = rospy.Publisher('/red/tracker/input_pose', PoseStamped, queue_size=1)
+        self.trajPub = rospy.Publisher("/red/position_hold/trajectory", MultiDOFJointTrajectoryPoint, queue_size=3)
 
         # Timers
         rospy.Timer(rospy.Duration(1.0/FSM_RATE), self.fsm)
@@ -139,19 +142,44 @@ class FSM():
             return
         rospy.loginfo("Heyawww!!!!!!!")
         self.fuel_last_heyawww_time = rospy.get_time()
+        self.drone_static = False
         final_pose = Pose()
         final_pose = self.curr_pose
         rot = tf.transformations.euler_from_quaternion([final_pose.orientation.x, final_pose.orientation.y, final_pose.orientation.z, final_pose.orientation.w])
         rot = list(rot)
-        rot[2] += np.pi/2
+        rot[2] += np.pi/6
         orient = tf.transformations.quaternion_from_euler(rot[0], rot[1], rot[2])
         final_pose.orientation.x = orient[0]
         final_pose.orientation.y = orient[1]
         final_pose.orientation.z = orient[2]
         final_pose.orientation.w = orient[3]
-        final_msg = PoseStamped()
-        final_msg.pose = final_pose
-        self.pose_pub.publish(final_msg)
+        # final_msg = PoseStamped()
+        # final_msg.pose = final_pose
+        # self.pose_pub.publish(final_msg)
+
+        multiDOF = MultiDOFJointTrajectoryPoint()
+
+        pos = Vector3()
+        ang = Vector3()
+
+
+        _vel = Twist()
+        _acc = Twist()
+
+        trans = Transform()
+
+        pos.x = final_pose.position.x
+        pos.y = final_pose.position.y
+        pos.z = final_pose.position.z
+
+        trans.translation = final_pose.position
+        trans.rotation = final_pose.orientation
+
+        multiDOF.transforms = [trans]
+        multiDOF.velocities = [_vel]
+        multiDOF.accelerations = [_acc]
+
+        self.trajPub.publish(multiDOF)
 
 
     def fsm(self, event=None):
@@ -168,9 +196,12 @@ class FSM():
                 
             else: # Zone 3
                 if not self.fuel_killed:
+                    rospy.loginfo("Reached Zone 3")
                     self.killFUEL()
+                
         else: # Challenge not started
-            if not self.fuel_inited and self.curr_pose is not None:
+            if self.zone != 3 and not self.fuel_inited and self.curr_pose is not None:
+                rospy.sleep(2)
                 self.startFUEL()
 
         # States
