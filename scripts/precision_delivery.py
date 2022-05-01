@@ -77,8 +77,9 @@ def odometryCallback(msg):
     crr_pos = msg.pose.pose.position
     
     err = 0.075
+    tune_fix = 0.00
 
-    if z - (tile_z+ball_to_uav_offset)>= err and ballistic:
+    if (z+tune_fix) - (tile_z+ball_to_uav_offset)>= err and ballistic:
         signalToDrop = 1
 
 def ballOdom(msg):
@@ -92,7 +93,7 @@ def ballOdom(msg):
 
     if Dist < minDist:
         minDist = Dist
-    #     #print("minDist = ", minDist)
+        print("minDist = ", minDist)
     # if Dist > minDist:
     #     with open("test_results.txt","a")as f:
     #         f.write(str(minDist))
@@ -127,7 +128,7 @@ def generateTraj():
     global crr_pos
 
     P1 = Vector3( tile_x - 10*cos(tile_yaw), tile_y - 10*sin(tile_yaw), tile_z + ball_to_uav_offset - 0.3)
-    P2 = Vector3( tile_x + 1.2*cos(tile_yaw), tile_y + 1.2*sin(tile_yaw) , tile_z + ball_to_uav_offset + 1.2)
+    P2 = Vector3( tile_x + 0.75*cos(tile_yaw), tile_y + 0.75*sin(tile_yaw) , tile_z + ball_to_uav_offset + 1.2)
     P3 = Vector3( tile_x - 5*cos(tile_yaw), tile_y - 5*sin(tile_yaw), tile_z + ball_to_uav_offset + 0.6)
 
     Q = quaternion_from_euler(0.0, 0.0, tile_yaw)
@@ -162,7 +163,7 @@ def statusCallback(msg):
     status_ = msg.data
 
 def clostTo(X, Y):
-    if (sqrt( (X.x - Y.x)**2 + (X.y - Y.y)**2 + (X.z - Y.z)**2 ) < 0.2):
+    if (sqrt( (X.x - Y.x)**2 + (X.y - Y.y)**2 + (X.z - Y.z)**2 ) <= 0.4):
         return True
     else:
         return False
@@ -191,8 +192,6 @@ def main():
     magnetPub = rospy.Publisher("/red/uav_magnet/gain", Float32, queue_size=1)
     distPub = rospy.Publisher("/red/ball_min_distance", Float32, queue_size=1)
     rate = rospy.Rate(50) #Hz
-    
-    rospy.sleep(1)
 
     while not rospy.is_shutdown() and not detected:
         continue
@@ -215,7 +214,7 @@ def main():
             #print("not at position")
             trajPub.publish(traj.points[1])
             rate.sleep()
-        rospy.sleep(1)
+
         rospy.loginfo("Initiating Ballistic Trajectory.")
         
         trajPub1.publish(traj1)
