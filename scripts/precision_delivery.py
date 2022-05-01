@@ -76,7 +76,7 @@ def odometryCallback(msg):
 
     crr_pos = msg.pose.pose.position
     
-    err = 0.075
+    err = -0.05
 
     if z - (tile_z+ball_to_uav_offset)>= err and ballistic:
         signalToDrop = 1
@@ -92,7 +92,7 @@ def ballOdom(msg):
 
     if Dist < minDist:
         minDist = Dist
-    #     #print("minDist = ", minDist)
+        print("minDist = ", minDist)
     # if Dist > minDist:
     #     with open("test_results.txt","a")as f:
     #         f.write(str(minDist))
@@ -229,6 +229,7 @@ def main():
                 magnetPub.publish(0.0)
                 if inAir == True:
                     rospy.loginfo("Landing Initiated.")
+                    distPub.publish(minDist)
                     inAir = False
                     if not landed:
                         landNow()
