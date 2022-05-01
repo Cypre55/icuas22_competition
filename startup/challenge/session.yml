@@ -83,8 +83,8 @@ windows:
         - waitForRos; rosrun icuas22_competition sensor_pose2.py 
         - waitForRos; rosrun icuas22_competition control_mapping.py 
         - waitForRos; roslaunch ar_track_alvar pr2_indiv.launch
-        - waitForRos; rosrun icuas22_competition isDetected.py 
+        # - waitForRos; rosrun icuas22_competition isDetected.py 
         - waitForRos; rosrun icuas22_competition fsm2.py 
         - waitForRos; rosrun icuas22_competition precision_delivery.py 
-        - waitForRos; rosrun icuas22_competition zone3exp2.py 
+        - waitForRos; rosrun icuas22_competition zone3exp3.py 
         - waitForRos; /home/arkpop20/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z
