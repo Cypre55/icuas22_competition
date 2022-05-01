@@ -228,6 +228,7 @@ def main():
                 magnetPub.publish(0.0)
                 if inAir == True:
                     rospy.loginfo("Landing Initiated.")
+                    distPub.publish(minDist)
                     inAir = False
                     if not landed:
                         landNow()
