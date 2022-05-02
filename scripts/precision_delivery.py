@@ -208,11 +208,11 @@ def main():
         traj = generateTraj1()
         traj1 = generateTraj()
     
-        #trajPub1.publish(traj)
+        trajPub1.publish(traj)
         
         while not clostTo(traj.points[1].transforms[0].translation, crr_pos) and not rospy.is_shutdown():
             #print("not at position")
-            trajPub.publish(traj.points[1])
+            #trajPub.publish(traj.points[1])
             rate.sleep()
 
         rospy.loginfo("Initiating Ballistic Trajectory.")

@@ -11,7 +11,7 @@ import numpy as np
 
 zone = -1
 WAYPOINTS = [
-    [[2.5, -4, 3], [0, 0, -0.707, 0.707]],
+    [[3, -4, 3], [0, 0, -0.707, 0.707]],
     [[5, -4, 3], [0, 0, -0.707, 0.707]],
     [[7.5, -4, 3], [0, 0, -0.707, 0.707]],
     [[7, -4, 3], [0, 0, -0.707, 0.707]],
@@ -33,7 +33,7 @@ WAYPOINTS = [
     [[5, 4, 3], [0, 0, 0.707, 0.707]],
     [[2.5, 4, 3], [0, 0, 0.707, 0.707]]
 ]
-REACH_THRESHOLD = 0.3
+REACH_THRESHOLD = 0.15
 
 pub1 = rospy.Publisher('red/tracker/input_pose', PoseStamped, queue_size=10)
 pub2 = rospy.Publisher('/red/tracker/input_trajectory',MultiDOFJointTrajectory,queue_size=10)
@@ -78,7 +78,7 @@ def exploration_trajectory():
         Ti = Transform(translation = Pi, rotation = Qi)
         trajPi = MultiDOFJointTrajectoryPoint(transforms = [Ti], velocities = [V], accelerations = [A])
         traj.points.append(trajPi)
-    
+    print("WAY PUB")
     pub2.publish(traj)
 
 def detection():
@@ -115,6 +115,7 @@ def detection():
                 print("Final Position")
                 print(pubMsg3.x,pubMsg3.y,pubMsg3.z)
                 os.system("rosnode kill /zone3exp")
+                rospy.sleep(5)
                 
             
 def zone3exp():
@@ -134,13 +135,12 @@ def zone3exp():
     while not rospy.is_shutdown():
         # print("zone: ",zone)
         if flag == False and zone == 3:
-            print("Starting")
             exploration_trajectory()
             flag = True
             i=1
         if reached_last_point == True and detected == False and zone == 3:
             rospy.Timer(rospy.Duration(5),regenerate_callback,oneshot = True)
-            print("HERE")
+            print("DIDNT DETECT HERE WE GO AGAIN")
             reached_last_point = False
             
         if drone_pose is not None and zone == 3:
