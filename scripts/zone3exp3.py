@@ -11,18 +11,43 @@ import numpy as np
 
 zone = -1
 WAYPOINTS = [
-    [[2, -4, 3], [0, 0, -0.682, 0.732]],
-    [[9, -4, 3], [0, 0, -0.682, 0.732]],
-    [[9, -4, 3], [0, 0, 0, 1]],
-    [[9, 4, 3], [0, 0, 0, 1]],
-    [[9, 4, 3], [0, 0, 0.682, 0.732]],
-    [[2, 4, 3], [0, 0, 0.682, 0.732]]
+    [[2.5, -4, 3], [0, 0, -0.707, 0.707]],
+    [[5, -4, 3], [0, 0, -0.707, 0.707]],
+    [[7.5, -4, 3], [0, 0, -0.707, 0.707]],
+    [[7, -4, 3], [0, 0, -0.707, 0.707]],
+    [[9.5, -4, 3], [0, 0, -0.707, 0.707]],
+    [[9, -4, 3], [0, 0, -0.707, 0.707]],
+    [[9, -4, 3], [0, 0, -0.383, 0.924]],
+    [[9.5, -4, 3], [0, 0, 0, 1]],
+    [[9, -3.75, 3], [0, 0, 0, 1]],
+    [[9, -2, 3], [0, 0, 0, 1]],
+    [[9, 0, 3], [0, 0, 0, 1]],
+    [[9, 2, 3], [0, 0, 0, 1]],
+    [[9, 3.75, 3], [0, 0, 0, 1]],
+    [[9.5, 4, 3], [0, 0, 0, 1]],
+    [[9, 4, 3], [0, 0, 0.383, 0.924]],
+    [[9, 4, 3], [0, 0, 0.707, 0.707]],
+    [[9.5, 4, 3], [0, 0, 0.707, 0.707]],
+    [[7, 4, 3], [0, 0, 0.707, 0.707]],
+    [[7.5, 4, 3], [0, 0, 0.707, 0.707]],
+    [[5, 4, 3], [0, 0, 0.707, 0.707]],
+    [[2.5, 4, 3], [0, 0, 0.707, 0.707]]
 ]
-REACH_THRESHOLD = 0.2
+REACH_THRESHOLD = 0.3
 
 pub1 = rospy.Publisher('red/tracker/input_pose', PoseStamped, queue_size=10)
 pub2 = rospy.Publisher('/red/tracker/input_trajectory',MultiDOFJointTrajectory,queue_size=10)
 pub3 = rospy.Publisher('/red/tag_position_reconstructed',Point,queue_size=10)
+detected = False
+reached_last_point = False
+
+def reach_point(x,y):
+    global drone_pose,REACH_THRESHOLD
+    if(abs(drone_pose.pose.pose.position.x - x) < REACH_THRESHOLD and abs(drone_pose.pose.pose.position.y - y) < REACH_THRESHOLD):
+        return True
+    else:
+        return False
+
 
 def markerCallback(data):
     global marker_pose
@@ -36,53 +61,35 @@ def zoneCallback(data):
     global zone
     zone = data.data
 
+def regenerate_callback(event):
+    global reached_last_point
+    # if reached_last_point:
+    exploration_trajectory()
+    print("NEW TRAJECTORY CALLED")
+
 def exploration_trajectory():
     traj = MultiDOFJointTrajectory()
 
-    P0 = Vector3(WAYPOINTS[0][0][0],WAYPOINTS[0][0][1],WAYPOINTS[0][0][2])
-    P1 = Vector3(WAYPOINTS[1][0][0],WAYPOINTS[1][0][1],WAYPOINTS[1][0][2])
-    P2 = Vector3(WAYPOINTS[2][0][0],WAYPOINTS[2][0][1],WAYPOINTS[2][0][2])
-    P3 = Vector3(WAYPOINTS[3][0][0],WAYPOINTS[3][0][1],WAYPOINTS[3][0][2])
-    P4 = Vector3(WAYPOINTS[4][0][0],WAYPOINTS[4][0][1],WAYPOINTS[4][0][2])
-    P5 = Vector3(WAYPOINTS[5][0][0],WAYPOINTS[5][0][1],WAYPOINTS[5][0][2])
-
-    Q0 = Quaternion(WAYPOINTS[0][1][0],WAYPOINTS[0][1][1],WAYPOINTS[0][1][2],WAYPOINTS[0][1][3])
-    Q1 = Quaternion(WAYPOINTS[1][1][0],WAYPOINTS[1][1][1],WAYPOINTS[1][1][2],WAYPOINTS[1][1][3])
-    Q2 = Quaternion(WAYPOINTS[2][1][0],WAYPOINTS[2][1][1],WAYPOINTS[2][1][2],WAYPOINTS[2][1][3])
-    Q3 = Quaternion(WAYPOINTS[3][1][0],WAYPOINTS[3][1][1],WAYPOINTS[3][1][2],WAYPOINTS[3][1][3])
-    Q4 = Quaternion(WAYPOINTS[4][1][0],WAYPOINTS[4][1][1],WAYPOINTS[4][1][2],WAYPOINTS[4][1][3])
-    Q5 = Quaternion(WAYPOINTS[5][1][0],WAYPOINTS[5][1][1],WAYPOINTS[5][1][2],WAYPOINTS[5][1][3])
-
     V = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
     A = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
-    T0 = Transform(translation=P0, rotation=Q0)
-    T1 = Transform(translation=P1, rotation=Q1)
-    T2 = Transform(translation=P2, rotation=Q2)
-    T3 = Transform(translation=P3, rotation=Q3)
-    T4 = Transform(translation=P4, rotation=Q4)
-    T5 = Transform(translation=P5, rotation=Q5)
-
-    trajP0 = MultiDOFJointTrajectoryPoint(transforms=[T0], velocities=[V], accelerations=[A])
-    trajP1 = MultiDOFJointTrajectoryPoint(transforms=[T1], velocities=[V], accelerations=[A])
-    trajP2 = MultiDOFJointTrajectoryPoint(transforms=[T2], velocities=[V], accelerations=[A])
-    trajP3 = MultiDOFJointTrajectoryPoint(transforms=[T3], velocities=[V], accelerations=[A])
-    trajP4 = MultiDOFJointTrajectoryPoint(transforms=[T4], velocities=[V], accelerations=[A])
-    trajP5 = MultiDOFJointTrajectoryPoint(transforms=[T5], velocities=[V], accelerations=[A])
-    traj.points.append(trajP0)
-    traj.points.append(trajP1)
-    traj.points.append(trajP2)
-    traj.points.append(trajP3)
-    traj.points.append(trajP4)
-    traj.points.append(trajP5)
+    for i in range(len(WAYPOINTS)):
+        Pi = Vector3(WAYPOINTS[i][0][0],WAYPOINTS[i][0][1],WAYPOINTS[i][0][2])
+        Qi = Quaternion(WAYPOINTS[i][1][0],WAYPOINTS[i][1][1],WAYPOINTS[i][1][2],WAYPOINTS[i][1][3])
+        Ti = Transform(translation = Pi, rotation = Qi)
+        trajPi = MultiDOFJointTrajectoryPoint(transforms = [Ti], velocities = [V], accelerations = [A])
+        traj.points.append(trajPi)
+    
     pub2.publish(traj)
 
 def detection():
-    global marker_pose,drone_pose, count
+    global marker_pose,drone_pose, count,detected
     pubMsg3 = Point()
     traj = MultiDOFJointTrajectory()
+    
     if marker_pose is not None:
         if marker_pose.markers:
             print("Detected")
+            detected = True
             a = marker_pose.markers[0].pose.pose.position.x
             b = marker_pose.markers[0].pose.pose.position.y
             c = marker_pose.markers[0].pose.pose.position.z
@@ -96,10 +103,11 @@ def detection():
             T0 = Transform(translation=P0, rotation=Q0)
             trajP0 = MultiDOFJointTrajectoryPoint(transforms=[T0], velocities=[V], accelerations=[A])
             traj.points.append(trajP0)
-            if count < 5:
+            if count == 0:
+                print("Pubslished new")
                 pub2.publish(traj)
             count = count+1
-            if count>20:
+            if count>10:
                 pubMsg3.x = marker_pose.markers[0].pose.pose.position.x
                 pubMsg3.y = marker_pose.markers[0].pose.pose.position.y
                 pubMsg3.z = marker_pose.markers[0].pose.pose.position.z
@@ -111,7 +119,8 @@ def detection():
             
 def zone3exp():
     rospy.init_node('zone3exp')
-    global drone_pose,marker_pose, zone, tag_detected, count
+    global drone_pose,marker_pose, zone, tag_detected, count, detected, reached_last_point
+    reached_last_point = False
     count = 0
     zone = -1
     tag_detected = False
@@ -122,13 +131,21 @@ def zone3exp():
     rospy.Subscriber('/ar_pose_marker',AlvarMarkers,markerCallback)
     flag = False
     rate =rospy.Rate(10)
-    while not rospy.is_shutdown() :
-        print("zone: ",zone)
-        if flag == False and zone ==3:
+    while not rospy.is_shutdown():
+        # print("zone: ",zone)
+        if flag == False and zone == 3:
+            print("Starting")
             exploration_trajectory()
             flag = True
-        if drone_pose is not None and zone ==3:
+            i=1
+        if reached_last_point == True and detected == False and zone == 3:
+            rospy.Timer(rospy.Duration(5),regenerate_callback,oneshot = True)
+            print("HERE")
+            reached_last_point = False
+            
+        if drone_pose is not None and zone == 3:
             detection()
+            reached_last_point = reach_point(WAYPOINTS[8][0][0],WAYPOINTS[8][0][1])
             drone_pose = None
         rate.sleep()
 

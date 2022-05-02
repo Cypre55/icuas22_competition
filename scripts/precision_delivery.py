@@ -37,11 +37,11 @@ def tagCallback(msg):
 
     if yaw_flag == 0:
         yaw_flag = 1
-        if abs(yaw_ - 0) < pi/18:
+        if abs(tile_x - 12.5) <= 0.15:
             tile_yaw = 0
-        elif abs(yaw_ - pi/2) < pi/18:
+        elif abs(tile_y - 7.5) <= 0.15:
             tile_yaw = 1.57079632679
-        elif abs(yaw_ + pi/2) < pi/18:
+        elif abs(tile_y + 7.5) <= 0.15:
             tile_yaw = -1.57079632679
         else:
             print("unable to set yaw")
