@@ -87,4 +87,8 @@ windows:
         - waitForRos; rosrun icuas22_competition fsm2.py 
         - waitForRos; rosrun icuas22_competition precision_delivery.py 
         - waitForRos; rosrun icuas22_competition zone3exp3.py 
+<<<<<<< HEAD
         - waitForRos; /home/ishabhray/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z
+=======
+        # - waitForRos; /home/arkpop20/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z
+>>>>>>> b1f791dbfd58fe28d4dab38ff875a057b8e8c87c
