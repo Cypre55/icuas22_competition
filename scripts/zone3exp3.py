@@ -8,6 +8,7 @@ from nav_msgs.msg import Odometry
 from ar_track_alvar_msgs.msg import AlvarMarkers,AlvarMarker
 from std_msgs.msg import Int32
 import numpy as np
+from sensor_msgs.msg import Image
 
 zone = -1
 WAYPOINTS = [
@@ -38,6 +39,7 @@ REACH_THRESHOLD = 0.15
 pub1 = rospy.Publisher('red/tracker/input_pose', PoseStamped, queue_size=10)
 pub2 = rospy.Publisher('/red/tracker/input_trajectory',MultiDOFJointTrajectory,queue_size=10)
 pub3 = rospy.Publisher('/red/tag_position_reconstructed',Point,queue_size=10)
+pub4 = rospy.Publisher('/red/tag_image_annotated',Image,queue_size=10)
 detected = False
 reached_last_point = False
 
@@ -48,6 +50,9 @@ def reach_point(x,y):
     else:
         return False
 
+def annotatedCallback(data):
+    global tag_annotated
+    tag_annotated = data
 
 def markerCallback(data):
     global marker_pose
@@ -82,8 +87,9 @@ def exploration_trajectory():
     pub2.publish(traj)
 
 def detection():
-    global marker_pose,drone_pose, count,detected
+    global marker_pose,drone_pose, count,detected,tag_annotated
     pubMsg3 = Point()
+    pubMsg4 = Image()
     traj = MultiDOFJointTrajectory()
     
     if marker_pose is not None:
@@ -108,6 +114,8 @@ def detection():
                 pub2.publish(traj)
             count = count+1
             if count>10:
+                pubMsg4 = tag_annotated
+                pub4.publish(pubMsg4)
                 pubMsg3.x = marker_pose.markers[0].pose.pose.position.x
                 pubMsg3.y = marker_pose.markers[0].pose.pose.position.y
                 pubMsg3.z = marker_pose.markers[0].pose.pose.position.z
@@ -130,6 +138,7 @@ def zone3exp():
     rospy.Subscriber('/red/odometry',Odometry,odomCallback)
     rospy.Subscriber('/zone',Int32,zoneCallback)
     rospy.Subscriber('/ar_pose_marker',AlvarMarkers,markerCallback)
+    rospy.Subscriber('/remap_tag_image_annotated',Image,annotatedCallback)
     flag = False
     rate =rospy.Rate(10)
     while not rospy.is_shutdown():

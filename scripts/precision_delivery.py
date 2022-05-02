@@ -2,6 +2,7 @@
 
 from matplotlib import transforms
 import rospy
+from time import sleep
 from math import cos, sin, sqrt, pi
 from nav_msgs.msg import Odometry
 from std_srvs.srv import Empty, SetBool
@@ -88,8 +89,9 @@ def ballOdom(msg):
     xb = msg.pose.position.x
     yb = msg.pose.position.y
     zb = msg.pose.position.z
+    # Dist = sqrt( ( xb - (tile_x) )**2 + ( yb  - (tile_y))**2 + (tile_z - zb)**2 )
+    Dist = sqrt( ( xb + 0.1*cos(tile_yaw) - (tile_x) )**2 + ( yb + 0.1*sin(tile_yaw)  - (tile_y))**2 + (tile_z - zb)**2 )
 
-    Dist = sqrt( ( xb - (tile_x) )**2 + ( yb  - (tile_y))**2 + (tile_z - zb)**2 ) - 0.1
 
     if Dist < minDist:
         minDist = Dist
@@ -126,7 +128,8 @@ def generateTraj1():
 def generateTraj():
     global tile_x, tile_y, tile_z, tile_yaw
     global crr_pos
-
+    
+    # P4 = Vector3( tile_x - 7*cos(tile_yaw), tile_y - 7*sin(tile_yaw), tile_z + ball_to_uav_offset - 0.2)
     P1 = Vector3( tile_x - 10*cos(tile_yaw), tile_y - 10*sin(tile_yaw), tile_z + ball_to_uav_offset - 0.3)
     P2 = Vector3( tile_x + 0.75*cos(tile_yaw), tile_y + 0.75*sin(tile_yaw) , tile_z + ball_to_uav_offset + 1.2)
     P3 = Vector3( tile_x - 5*cos(tile_yaw), tile_y - 5*sin(tile_yaw), tile_z + ball_to_uav_offset + 0.6)
@@ -134,24 +137,29 @@ def generateTraj():
     Q = quaternion_from_euler(0.0, 0.0, tile_yaw)
     Q1 = Quaternion(Q[0], Q[1], Q[2], Q[3])
 
+    # V4 = Twist(linear=Vector3( -5*cos(tile_yaw), -5*sin(tile_yaw), -1), angular=Vector3( 0, 0, 0))
     V1 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
     V2 = Twist(linear=Vector3( 15*cos(tile_yaw), 15*sin(tile_yaw), 100), angular=Vector3( 0, 0, 0))
     V3 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
 
+    # A4 = Twist(linear=Vector3( -10*cos(tile_yaw), -10*sin(tile_yaw), 0), angular=Vector3( 0, 0, 0))
     A1 = Twist(linear=Vector3( 20*cos(tile_yaw), 20*sin(tile_yaw), 0), angular=Vector3( 0, 0, 0))
     A2 = Twist(linear=Vector3( 0*cos(tile_yaw), 0*sin(tile_yaw), 100), angular=Vector3( 0, 0, 0))
     A3 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
 
+    # T4 = Transform(translation=P4, rotation=Q1)
     T1 = Transform(translation=P1, rotation=Q1)
     T2 = Transform(translation=P2, rotation=Q1)
     T3 = Transform(translation=P3, rotation=Q1)
     
     traj = MultiDOFJointTrajectory()
 
+    # trajP4= MultiDOFJointTrajectoryPoint(transforms=[T4], velocities=[V4], accelerations=[A4])
     trajP1 = MultiDOFJointTrajectoryPoint(transforms=[T1], velocities=[V1], accelerations=[A1])
     trajP2 = MultiDOFJointTrajectoryPoint(transforms=[T2], velocities=[V2], accelerations=[A2])
     trajP3 = MultiDOFJointTrajectoryPoint(transforms=[T3], velocities=[V3], accelerations=[A3])
 
+    # traj.points.append(trajP4)
     traj.points.append(trajP1)
     traj.points.append(trajP2)
     traj.points.append(trajP3)
@@ -163,7 +171,7 @@ def statusCallback(msg):
     status_ = msg.data
 
 def clostTo(X, Y):
-    if (sqrt( (X.x - Y.x)**2 + (X.y - Y.y)**2 + (X.z - Y.z)**2 ) <= 0.4):
+    if (sqrt( (X.x - Y.x)**2 + (X.y - Y.y)**2 + (X.z - Y.z)**2 ) <= 0.35):
         return True
     else:
         return False
@@ -190,7 +198,7 @@ def main():
     trajPub = rospy.Publisher("/red/position_hold/trajectory", MultiDOFJointTrajectoryPoint, queue_size=1)
     trajPub1 = rospy.Publisher("/red/tracker/input_trajectory", MultiDOFJointTrajectory, queue_size=1)
     magnetPub = rospy.Publisher("/red/uav_magnet/gain", Float32, queue_size=1)
-    distPub = rospy.Publisher("/red/ball_min_distance", Float32, queue_size=1)
+    distPub = rospy.Publisher("/red/ball_min_distance", Float32, queue_size=30)
     rate = rospy.Rate(50) #Hz
 
     while not rospy.is_shutdown() and not detected:
@@ -223,16 +231,17 @@ def main():
         inAir = True
         landed=False
         while not rospy.is_shutdown():
-            distPub.publish(minDist)
             if signalToDrop == 1:
                 magnetPub.publish(0.0)
                 if inAir == True:
                     rospy.loginfo("Landing Initiated.")
-                    distPub.publish(minDist)
                     inAir = False
                     if not landed:
+                        sleep(4)
                         landNow()
+                        distPub.publish(minDist)
                         landed = True
+                        
             rate.sleep()        
 
 if __name__ == '__main__':
