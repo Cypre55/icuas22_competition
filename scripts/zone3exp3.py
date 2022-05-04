@@ -13,28 +13,28 @@ from sensor_msgs.msg import Image
 zone = -1
 WAYPOINTS = [
     [[3, -4, 3], [0, 0, -0.707, 0.707]],
-    [[5, -4, 3], [0, 0, -0.707, 0.707]],
-    [[7.5, -4, 3], [0, 0, -0.707, 0.707]],
+    # [[5, -4, 3], [0, 0, -0.707, 0.707]],
     [[7, -4, 3], [0, 0, -0.707, 0.707]],
-    [[9.5, -4, 3], [0, 0, -0.707, 0.707]],
-    [[9, -4, 3], [0, 0, -0.707, 0.707]],
+    [[7.5, -4, 3], [0, 0, -0.707, 0.707]],
+    # [[9, -4, 3], [0, 0, -0.707, 0.707]],
+    # [[9.5, -4, 3], [0, 0, -0.707, 0.707]],
     [[9, -4, 3], [0, 0, -0.383, 0.924]],
-    [[9.5, -4, 3], [0, 0, 0, 1]],
-    [[9, -3.75, 3], [0, 0, 0, 1]],
-    [[9, -2, 3], [0, 0, 0, 1]],
-    [[9, 0, 3], [0, 0, 0, 1]],
-    [[9, 2, 3], [0, 0, 0, 1]],
-    [[9, 3.75, 3], [0, 0, 0, 1]],
-    [[9.5, 4, 3], [0, 0, 0, 1]],
+    [[9, -4, 3], [0, 0, 0, 1]],
+    # [[9, -3.75, 3], [0, 0, 0, 1]],
+    # [[9, -2, 3], [0, 0, 0, 1]],
+    # [[9, 0, 3], [0, 0, 0, 1]],
+    # [[9, 2, 3], [0, 0, 0, 1]],
+    # [[9, 3.75, 3], [0, 0, 0, 1]],
+    [[9, 4, 3], [0, 0, 0, 1]],
     [[9, 4, 3], [0, 0, 0.383, 0.924]],
+    # [[9.5, 4, 3], [0, 0, 0.707, 0.707]],
     [[9, 4, 3], [0, 0, 0.707, 0.707]],
-    [[9.5, 4, 3], [0, 0, 0.707, 0.707]],
-    [[7, 4, 3], [0, 0, 0.707, 0.707]],
-    [[7.5, 4, 3], [0, 0, 0.707, 0.707]],
-    [[5, 4, 3], [0, 0, 0.707, 0.707]],
-    [[2.5, 4, 3], [0, 0, 0.707, 0.707]]
+    # [[7, 4, 3], [0, 0, 0.707, 0.707]],
+    # [[7.5, 4, 3], [0, 0, 0.707, 0.707]],
+    # [[5, 4, 3], [0, 0, 0.707, 0.707]],
+    [[3, 4, 3], [0, 0, 0.707, 0.707]]
 ]
-REACH_THRESHOLD = 0.15
+REACH_THRESHOLD = 0.4
 
 pub1 = rospy.Publisher('red/tracker/input_pose', PoseStamped, queue_size=10)
 pub2 = rospy.Publisher('/red/tracker/input_trajectory',MultiDOFJointTrajectory,queue_size=10)
@@ -67,10 +67,12 @@ def zoneCallback(data):
     zone = data.data
 
 def regenerate_callback(event):
-    global reached_last_point
-    # if reached_last_point:
     exploration_trajectory()
-    print("NEW TRAJECTORY CALLED")
+
+def reachPointCallback(event):
+    global reached_last_point,drone_pose
+    if drone_pose is not None:
+        reached_last_point = reach_point(WAYPOINTS[len(WAYPOINTS)-1][0][0],WAYPOINTS[len(WAYPOINTS)-1][0][1])
 
 def exploration_trajectory():
     traj = MultiDOFJointTrajectory()
@@ -140,23 +142,22 @@ def zone3exp():
     rospy.Subscriber('/ar_pose_marker',AlvarMarkers,markerCallback)
     rospy.Subscriber('/remap_tag_image_annotated',Image,annotatedCallback)
     flag = False
-    rate =rospy.Rate(10)
+    # rate =rospy.Rate(10)
     while not rospy.is_shutdown():
-        # print("zone: ",zone)
+        if drone_pose is not None and zone ==3:
+            rospy.Timer(rospy.Duration(0.5),reachPointCallback,oneshot=True)
         if flag == False and zone == 3:
             exploration_trajectory()
             flag = True
-            i=1
         if reached_last_point == True and detected == False and zone == 3:
-            rospy.Timer(rospy.Duration(5),regenerate_callback,oneshot = True)
+            # rospy.Timer(rospy.Duration(3),regenerate_callback,oneshot = True)
             print("DIDNT DETECT HERE WE GO AGAIN")
+            exploration_trajectory()
             reached_last_point = False
-            
         if drone_pose is not None and zone == 3:
             detection()
-            reached_last_point = reach_point(WAYPOINTS[8][0][0],WAYPOINTS[8][0][1])
             drone_pose = None
-        rate.sleep()
+        # rate.sleep()
 
 
 if __name__ == '__main__':
