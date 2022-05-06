@@ -50,7 +50,7 @@ windows:
         - waitForRos; roslaunch ardupilot_gazebo kopterworx.launch 
           use_sim_time:=true
           enable_magnet:=true
-          x:=2.0
+          x:=-10.0
           world:=$(rospack find icuas22_competition)/worlds/well_lit.world
         - waitForRos; waitForSimulation; roslaunch larics_gazebo_worlds spawn_arena_v$ARENA_TYPE.launch
         - waitForRos; waitForSimulation; sleep 2; roslaunch larics_gazebo_worlds spawn_alvar_tile.launch 
@@ -83,12 +83,12 @@ windows:
         - waitForRos; roslaunch icuas22_competition toppra_tracker2.launch 
           tracker_config:=custom_config/topp_config_custom2.yaml
           input_trajectory:=/$UAV_NAMESPACE/tracker/input_trajectory2
-        # - waitForRos; rosrun icuas22_competition sensor_pose2.py 
-        # - waitForRos; rosrun icuas22_competition control_mapping.py 
+        - waitForRos; rosrun icuas22_competition sensor_pose2.py 
+        - waitForRos; rosrun icuas22_competition control_mapping.py 
         - waitForRos; roslaunch ar_track_alvar pr2_indiv.launch
-        # - waitForRos; rosrun icuas22_competition isDetected.py 
-        - waitForRos; rosrun icuas22_competition fsm2.py
-        # - waitForRos; rosrun icuas22_competition Spline_Trajectory_generator.py
+        - waitForRos; rosrun icuas22_competition fsm3.py 
         - waitForRos; rosrun icuas22_competition deliveryNew2.py 
         - waitForRos; rosrun icuas22_competition zone3exp3.py 
+        - waitForRos; roslaunch exploration_manager rviz.launch 
+        - waitForRos; roslaunch exploration_manager icuas.launch init_x:=-10 init_y:=0 init_z:=0
         - waitForRos; /home/arkpop20/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z
