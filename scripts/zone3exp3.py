@@ -98,7 +98,7 @@ def detection():
     traj = MultiDOFJointTrajectory()
     
     if marker_pose is not None:
-        if marker_pose.markers:
+        if len(marker_pose.markers):
             print("Detected")
             detected = True
             a = marker_pose.markers[0].pose.pose.position.x
