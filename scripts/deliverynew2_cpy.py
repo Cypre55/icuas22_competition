@@ -24,6 +24,7 @@ tile_z = 0
 yaw_flag = 0
 yaw_ = 0
 detected = False
+b =0.2
 
 def tagCallback(msg):
     global tile_x, tile_y, tile_z, tile_yaw, yaw_flag, detected
@@ -76,9 +77,9 @@ def odometryCallback(msg):
     tune_fix = 0.00
 
     # and z >= tile_z + ball_to_uav_offset - 0.4
-    a =  2.25
-
-    if x*cos(tile_yaw) + y*sin(tile_yaw) > (tile_x*cos(tile_yaw) - a)*abs(cos(tile_yaw)) + (tile_y*sin(tile_yaw) - a)*abs(sin(tile_yaw)) and z >= tile_z - 0.5 and ballistic:
+    a = 2.27
+    b = 0.15
+    if x*cos(tile_yaw) + y*sin(tile_yaw) > ((tile_x)*cos(tile_yaw) - a)*abs(cos(tile_yaw)) + ((tile_y)*sin(tile_yaw) - a)*abs(sin(tile_yaw)) and abs(z - (tile_z + ball_to_uav_offset)) >= b  and ballistic:
         signalToDrop = 1
 
 
@@ -102,7 +103,7 @@ def ballOdom(msg):
 
 
 def waypointFromWall(dist, z):
-    return Vector3(tile_x - dist*cos(tile_yaw), tile_y - dist*sin(tile_yaw), z)
+    return Vector3((tile_x) - dist*cos(tile_yaw)+ 0.1*sin(tile_yaw), (tile_y) - dist*sin(tile_yaw) + 0.1*cos(tile_yaw), z)
 
 def generateTraj():
     global tile_x, tile_y, tile_z, tile_yaw
@@ -115,12 +116,12 @@ def generateTraj():
     Q = quaternion_from_euler(0.0, 0.0, tile_yaw)
     Q1 = Quaternion(Q[0], Q[1], Q[2], Q[3])
 
-    P1 = waypointFromWall( 10,               tile_z  + ball_to_uav_offset - 1 + (-0.4)  )   #back P1
-    P2 = waypointFromWall( 4,               tile_z  + ball_to_uav_offset - 1 + 0.3    )   #back P2
-    P3 = waypointFromWall( 1.6,          tile_z  + ball_to_uav_offset      + 0 + 0.6 )   #Continue straight from here
+    P1 = waypointFromWall( 8,               tile_z  + ball_to_uav_offset - 1 + (0)  )   #back P1
+    P2 = waypointFromWall( 4,               tile_z  + ball_to_uav_offset - 1 + 0.5    )   #back P2
+    P3 = waypointFromWall( 1.3,          tile_z  + ball_to_uav_offset      + 0 + 0.8 )   #Continue straight from here
     # P6 = waypointFromWall( 2,          tile_z  + ball_to_uav_offset      + 0 + 0.6 )   #Continue straight from here
-    P4 = waypointFromWall( 3,             tile_z  + ball_to_uav_offset + 0.6 )   #end straight path
-    P5 = waypointFromWall( 10,               tile_z  + ball_to_uav_offset + 0.6 )   #stopping point
+    P4 = waypointFromWall( 3,             tile_z  + ball_to_uav_offset + 0.5 )   #end straight path
+    P5 = waypointFromWall( 10,               tile_z  + ball_to_uav_offset + 0.5 )   #stopping point
 
     T1 = Transform(translation=P1, rotation=Q1)
     T2 = Transform(translation=P2, rotation=Q1)
@@ -130,15 +131,15 @@ def generateTraj():
     T5 = Transform(translation=P5, rotation=Q1)
 
     V1 = Twist(linear=Vector3( 0, 0, 0),                                               angular=Vector3( 0, 0, 0))
-    V2 = Twist(linear=Vector3( 5*cos(tile_yaw),         5*sin(tile_yaw),        0),     angular=Vector3( 0, 0, 0))
-    V3 = Twist(linear=Vector3( 1*cos(tile_yaw),         1*sin(tile_yaw),        10),     angular=Vector3( 0, 0, 0))
+    V2 = Twist(linear=Vector3( 5*round(cos(tile_yaw)),         5*round(sin(tile_yaw)),        0),     angular=Vector3( 0, 0, 0))
+    V3 = Twist(linear=Vector3( 5*round(cos(tile_yaw)),         5*round(sin(tile_yaw)),        4.2),     angular=Vector3( 0, 0, 0))
     # V6 = Twist(linear=Vector3( -2*cos(tile_yaw),   -2*sin(tile_yaw),  0),     angular=Vector3( 0, 0, 0))
-    V4 = Twist(linear=Vector3( -6*cos(tile_yaw),   -6*sin(tile_yaw),  0),     angular=Vector3( 0, 0, 0))
+    V4 = Twist(linear=Vector3( -6*round(cos(tile_yaw)),   -6*round(sin(tile_yaw)),  0),     angular=Vector3( 0, 0, 0))
     V5 = Twist(linear=Vector3( 0, 0, 0),                                                angular=Vector3( 0, 0, 0))
 
     A1 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
     A2 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
-    A3 = Twist(linear=Vector3( -2*cos(tile_yaw), -2*sin(tile_yaw), 0), angular=Vector3( 0, 0, 0))
+    A3 = Twist(linear=Vector3( -1*round(cos(tile_yaw)), -1*round(sin(tile_yaw)), 0), angular=Vector3( 0, 0, 0))
     # A6 = Twist(linear=Vector3( -1.5*cos(tile_yaw), -1.5*sin(tile_yaw), 0), angular=Vector3( 0, 0, 0))
     A4 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
     A5 = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
@@ -161,7 +162,7 @@ def generateTraj():
 
 
 def clostTo(X, Y):
-    if abs(X.x - Y.x) <= 0.1 and abs(X.y - Y.y) <= 0.1:
+    if abs(X.x - Y.x) <= 0.05 and abs(X.y - Y.y) <= 0.05:
         return True
     else:
         return False
@@ -184,7 +185,7 @@ def main():
     rospy.Subscriber("/red/tag_position_reconstructed", Point, tagCallback)    
 
     # trajPub = rospy.Publisher("/red/position_hold/trajectory", MultiDOFJointTrajectoryPoint, queue_size=1)
-    posePub = rospy.Publisher("/red/tracker/input_pose", PoseStamped, queue_size=1)
+    posePub = rospy.Publisher("/red/tracker/input_trajectory", MultiDOFJointTrajectory, queue_size=1)
     trajPub1 = rospy.Publisher("/red/tracker/input_trajectory2", MultiDOFJointTrajectory, queue_size=1)
     magnetPub = rospy.Publisher("/red/uav_magnet/gain", Float32, queue_size=1)
     distPub = rospy.Publisher("/red/ball_min_distance", Float32, queue_size=30)
@@ -212,12 +213,15 @@ def main():
 
         traj = generateTraj()
 
-        pose_ = waypointFromWall( 10,               tile_z  + ball_to_uav_offset - 1 + (-0.4))
+        P0 = waypointFromWall( 8,               tile_z  + ball_to_uav_offset - 1 + (0))
         Q = quaternion_from_euler(0,0,tile_yaw)
-        orien = Quaternion(Q[0], Q[1], Q[2], Q[3])
-        pose0 = PoseStamped(pose = Pose( position = Point(pose_.x, pose_.y, pose_.z), orientation = orien ))
+        Q0 = Quaternion(Q[0], Q[1], Q[2], Q[3])
+        T0 = Transform(translation=P0, rotation=Q0)
+        pose0 = MultiDOFJointTrajectoryPoint(transforms=[T0])
+        Pose0 = MultiDOFJointTrajectory()
+        Pose0.points.append(pose0)
 
-        posePub.publish(pose0)
+        posePub.publish(Pose0)
     
         for i in range(7):
             rospy.sleep(1)
