@@ -80,15 +80,18 @@ windows:
       layout: tiled
       panes:
         # Launch your Challenge solution here
-        - waitForRos; roslaunch icuas22_competition toppra_tracker2.launch 
-          tracker_config:=custom_config/topp_config_custom2.yaml
-          input_trajectory:=/$UAV_NAMESPACE/tracker/input_trajectory2
-        - waitForRos; rosrun icuas22_competition sensor_pose2.py 
-        - waitForRos; rosrun icuas22_competition control_mapping.py 
-        - waitForRos; roslaunch ar_track_alvar pr2_indiv.launch
-        - waitForRos; rosrun icuas22_competition fsm3.py 
-        - waitForRos; rosrun icuas22_competition deliveryNew2.py 
-        - waitForRos; rosrun icuas22_competition zone3exp3.py 
-        - waitForRos; roslaunch exploration_manager rviz.launch 
-        - waitForRos; roslaunch exploration_manager icuas.launch init_x:=-10 init_y:=0 init_z:=0
-        - waitForRos; /home/arkpop20/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z
+        # - waitForRos; roslaunch icuas22_competition toppra_tracker2.launch 
+        #   tracker_config:=custom_config/topp_config_custom2.yaml
+        #   input_trajectory:=/$UAV_NAMESPACE/tracker/input_trajectory2
+        # - waitForRos; rosrun icuas22_competition sensor_pose2.py 
+        # - waitForRos; rosrun icuas22_competition control_mapping.py 
+        # - waitForRos; roslaunch ar_track_alvar pr2_indiv.launch
+        - waitForRos; rosrun icuas22_competition vox_fsm.py 
+        # - waitForRos; rosrun icuas22_competition deliverynew2_cpy.py 
+        # - waitForRos; rosrun icuas22_competition zone3exp3.py 
+        # - waitForRos; roslaunch exploration_manager rviz.launch 
+        # - waitForRos; roslaunch exploration_manager icuas.launch init_x:=-10 init_y:=0 init_z:=0
+        # - waitForRos; /home/ishabhray/icuas_ws/src/icuas22_competition/scripts/eval.py $TILE_X $TILE_Y $TILE_Z
+        - waitForRos; rosrun icuas22_competition z1.py
+        - waitForRos; roslaunch voxblox_ros icuas.launch
+        # - waitForRos; rosrun icuas22_competition pc_extend.py
