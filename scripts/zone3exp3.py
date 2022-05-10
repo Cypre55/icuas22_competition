@@ -101,45 +101,52 @@ def detection():
         if len(marker_pose.markers):
             print("Detected")
             detected = True
-            a = marker_pose.markers[0].pose.pose.position.x
-            b = marker_pose.markers[0].pose.pose.position.y
-            c = marker_pose.markers[0].pose.pose.position.z
-            print(a,b,c)
-            lx,ly,lz = drone_pose.pose.pose.position.x,drone_pose.pose.pose.position.y,drone_pose.pose.pose.position.z
-            qx,qy,qz,qw = drone_pose.pose.pose.orientation.x,drone_pose.pose.pose.orientation.y,drone_pose.pose.pose.orientation.z,drone_pose.pose.pose.orientation.w
-            pubMsg1.pose.position.x = lx
-            pubMsg1.pose.position.y = ly
-            pubMsg1.pose.position.z = lz
-            pubMsg1.pose.orientation.x = qx
-            pubMsg1.pose.orientation.y = qy
-            pubMsg1.pose.orientation.z = qz
-            pubMsg1.pose.orientation.w = qw
-            P0 = Vector3(drone_pose.pose.pose.position.x,drone_pose.pose.pose.position.y,drone_pose.pose.pose.position.z)
-            # print(P0)
-            Q0 = Quaternion(drone_pose.pose.pose.orientation.x,drone_pose.pose.pose.orientation.y,drone_pose.pose.pose.orientation.z,drone_pose.pose.pose.orientation.w)
+            try:
+                a = marker_pose.markers[0].pose.pose.position.x
+                b = marker_pose.markers[0].pose.pose.position.y
+                c = marker_pose.markers[0].pose.pose.position.z
+            except:
+                return
+            else:
+                a = marker_pose.markers[0].pose.pose.position.x
+                b = marker_pose.markers[0].pose.pose.position.y
+                c = marker_pose.markers[0].pose.pose.position.z
+                print(a,b,c)
+                lx,ly,lz = drone_pose.pose.pose.position.x,drone_pose.pose.pose.position.y,drone_pose.pose.pose.position.z
+                qx,qy,qz,qw = drone_pose.pose.pose.orientation.x,drone_pose.pose.pose.orientation.y,drone_pose.pose.pose.orientation.z,drone_pose.pose.pose.orientation.w
+                pubMsg1.pose.position.x = lx
+                pubMsg1.pose.position.y = ly
+                pubMsg1.pose.position.z = lz
+                pubMsg1.pose.orientation.x = qx
+                pubMsg1.pose.orientation.y = qy
+                pubMsg1.pose.orientation.z = qz
+                pubMsg1.pose.orientation.w = qw
+                P0 = Vector3(drone_pose.pose.pose.position.x,drone_pose.pose.pose.position.y,drone_pose.pose.pose.position.z)
+                # print(P0)
+                Q0 = Quaternion(drone_pose.pose.pose.orientation.x,drone_pose.pose.pose.orientation.y,drone_pose.pose.pose.orientation.z,drone_pose.pose.pose.orientation.w)
 
-            V = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
-            A = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
-            T0 = Transform(translation=P0, rotation=Q0)
-            trajP0 = MultiDOFJointTrajectoryPoint(transforms=[T0], velocities=[V], accelerations=[A])
-            traj.points.append(trajP0)
-            if count == 0 :
-                print("Pubslished new")
-                # pub2.publish(traj)
-            # pub1.publish(pubMsg1)
-                pub2.publish(traj)
-            count = count+1
-            if count>32:
-                pubMsg4 = tag_annotated
-                pub4.publish(pubMsg4)
-                pubMsg3.x = marker_pose.markers[0].pose.pose.position.x
-                pubMsg3.y = marker_pose.markers[0].pose.pose.position.y
-                pubMsg3.z = marker_pose.markers[0].pose.pose.position.z
-                pub3.publish(pubMsg3)
-                print("Final Position")
-                print(pubMsg3.x,pubMsg3.y,pubMsg3.z)
-                os.system("rosnode kill /zone3exp")
-                rospy.sleep(5)
+                V = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
+                A = Twist(linear=Vector3( 0, 0, 0), angular=Vector3( 0, 0, 0))
+                T0 = Transform(translation=P0, rotation=Q0)
+                trajP0 = MultiDOFJointTrajectoryPoint(transforms=[T0], velocities=[V], accelerations=[A])
+                traj.points.append(trajP0)
+                if count == 0 :
+                    print("Pubslished new")
+                    # pub2.publish(traj)
+                # pub1.publish(pubMsg1)
+                    pub2.publish(traj)
+                count = count+1
+                if count>32:
+                    pubMsg4 = tag_annotated
+                    pub4.publish(pubMsg4)
+                    pubMsg3.x = marker_pose.markers[0].pose.pose.position.x
+                    pubMsg3.y = marker_pose.markers[0].pose.pose.position.y
+                    pubMsg3.z = marker_pose.markers[0].pose.pose.position.z
+                    pub3.publish(pubMsg3)
+                    print("Final Position")
+                    print(pubMsg3.x,pubMsg3.y,pubMsg3.z)
+                    os.system("rosnode kill /zone3exp")
+                    rospy.sleep(5)
                 
             
 def zone3exp():
