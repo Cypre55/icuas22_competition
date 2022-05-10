@@ -20,12 +20,26 @@ def waypoints_generation():
     z = 2
     # left to right
     iterations = 10
+    for i in range(10):
+        WAYPOINTS.append([[-9, -5, z], [0, 0, 0.5, 0.866]])
     for i in range(iterations):
-        WAYPOINTS.append([[-11, -5+(10)*i/(iterations-1), z], [0, 0, 0, 1]])
+        if i%2==0:
+            WAYPOINTS.append([[-11, -5+(10)*i/(iterations-1), z], [0, 0, 0, 1]])
+        else:
+            WAYPOINTS.append([[-9, -5+(10)*i/(iterations-1), z+0.5], [0, 0, 0, 1]])
     # right to left
+    for i in range(10):
+        WAYPOINTS.append([[-11, 5, z], [0, 0, 0, 1]])
     iterations = 10
     for i in range(iterations):
-        WAYPOINTS.append([[-11, -5+(10)*i/(iterations-1), z], [0, 0, 0, 1]])
+        if i%2==0:
+            WAYPOINTS.append([[-11, 5+(-10)*i/(iterations-1), z], [0, 0, 0, 1]])
+        else:
+            WAYPOINTS.append([[-9, 5+(-10)*i/(iterations-1), z+0.5], [0, 0, 0, 1]])
+    for i in range(10):
+        WAYPOINTS.append([[-9, -5, z], [0, 0, 0.5, 0.866]])
+    for i in range(10):
+        WAYPOINTS.append([[-9, 5, z], [0, 0, -0.5, 0.866]])
 
 REACH_THRESHOLD = 0.4
 
